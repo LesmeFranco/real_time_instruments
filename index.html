@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Horizonte Artificial</title>
+  <link rel="stylesheet" type="text/css" href="/styles/flight-indicators.css" />
+  <link rel="stylesheet" type="text/css" href="/styles/style.css" />
+</head>
+
+<body>
+  <div id="container">
+    <div id="attitude"></div>
+    <div id="heading"></div>
+  </div>
+  
+  <script type="module">
+document.addEventListener('DOMContentLoaded', function() {
+  import('./esm/module-flight-indicators.mjs').then(({default: FlightIndicators}) => {
+    const attitudeElement = document.querySelector("#attitude");
+    const headingElement = document.querySelector("#heading");
+    const options = { size: 600, hideBox: false };
+
+    const attitude = new FlightIndicators(attitudeElement, FlightIndicators.TYPE_ATTITUDE, options);
+    const heading = new FlightIndicators(headingElement, FlightIndicators.TYPE_HEADING, options);
+
+    async function updateIndicators() {
+      try {
+        const response = await fetch('/api/mpu');
+        const data = await response.json();
+
+        attitude.updateRoll(data.roll);
+        attitude.updatePitch(data.pitch);
+        heading.updateHeading(data.heading);
+      } catch (e) {
+        console.error('Error fetching MPU data:', e);
+      }
+    }
+
+    setInterval(updateIndicators, 500); // actualiza cada 500ms
+  });
+});
+</script>
+
+   <!-- JS clásico -->
+  <script src="/scripts/flight-indicators.js"></script>
+  <script src="/scripts/script.js"></script>
+  
+</body>
+
+</html>
